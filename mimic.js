@@ -74,7 +74,7 @@ function onReset() {
   $("#logs").html("");  // clear out previous log
 
   // TODO(optional): You can restart the game as well
-  // <your code here>
+  detector.start()
 };
 
 // Add a callback to notify when camera access is allowed
@@ -102,7 +102,7 @@ detector.addEventListener("onInitializeSuccess", function() {
   $("#face_video").css("display", "none");
 
   // TODO(optional): Call a function to initialize the game, if needed
-  // <your code here>
+  onStart();
 });
 
 // Add a callback to receive the results from processing an image
@@ -133,7 +133,7 @@ detector.addEventListener("onImageResultsSuccess", function(faces, image, timest
     drawEmoji(canvas, image, faces[0]);
 
     // TODO: Call your function to run the game (define it first!)
-    // <your code here>
+    //runGame(canvas, image, faces[0])
   }
 });
 
@@ -144,18 +144,17 @@ detector.addEventListener("onImageResultsSuccess", function(faces, image, timest
 function drawFeaturePoints(canvas, img, face) {
   // Obtain a 2D context object to draw on the canvas
   var ctx = canvas.getContext('2d');
-
-  // TODO: Set the stroke and/or fill style you want for each feature point marker
-  // See: https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#Fill_and_stroke_styles
-  // <your code here>
-  
+  // Setting my fill and stroke style for the FeaturePoints
+  // I used https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#Fill_and_stroke_styles
+  ctx.fillStyle = 'rgba(0,0,200,0)'
+  ctx.strokeStyle = 'white'
   // Loop over each feature point in the face
   for (var id in face.featurePoints) {
     var featurePoint = face.featurePoints[id];
-
-    // TODO: Draw feature point, e.g. as a circle using ctx.arc()
-    // See: https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/arc
-    // <your code here>
+    // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/arc
+    ctx.beginPath()
+    ctx.arc(featurePoint['x'], featurePoint['y'], 2, 0, 2 * Math.PI)
+    ctx.stroke()
   }
 }
 
@@ -163,18 +162,29 @@ function drawFeaturePoints(canvas, img, face) {
 function drawEmoji(canvas, img, face) {
   // Obtain a 2D context object to draw on the canvas
   var ctx = canvas.getContext('2d');
+  ctx.font = '96px serif'
+  // featurePoints[32] is the upper corner of left eye
+  ctx.strokeText(face.emojis.dominantEmoji, face.featurePoints[32]['x'] + 50, face.featurePoints[32]['y']-50)
+}
 
-  // TODO: Set the font and style you want for the emoji
-  // <your code here>
-  
-  // TODO: Draw it using ctx.strokeText() or fillText()
-  // See: https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillText
-  // TIP: Pick a particular feature point as an anchor so that the emoji sticks to your face
-  // <your code here>
+/*
+function runGame(canvas, img, face){
+  not_guessed = true
+  while (not_guessed){
+    var target = emojis[Math.floor(Math.random() * 13)]
+    setTargetEmoji(target)
+    if(face.emojis.dominantEmoji == target){
+      setScore(correct++, total++)
+    }else{
+      not_guessed = false
+    }
+  }
 }
 
 // TODO: Define any variables and functions to implement the Mimic Me! game mechanics
-
+var correct = 0
+var total = 0
+*/
 // NOTE:
 // - Remember to call your update function from the "onImageResultsSuccess" event handler above
 // - You can use setTargetEmoji() and setScore() functions to update the respective elements
