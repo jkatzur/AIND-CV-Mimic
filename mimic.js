@@ -1,3 +1,4 @@
+// Much of the ideas on how this should work come from: https://github.com/jrios6/AIND-CV-Mimic/blob/master/mimic.js
 // Mimic Me!
 // Fun game where you need to express emojis being displayed
 
@@ -74,7 +75,7 @@ function onReset() {
   $("#logs").html("");  // clear out previous log
 
   // TODO(optional): You can restart the game as well
-  detector.start()
+  runGame()
 };
 
 // Add a callback to notify when camera access is allowed
@@ -102,7 +103,7 @@ detector.addEventListener("onInitializeSuccess", function() {
   $("#face_video").css("display", "none");
 
   // TODO(optional): Call a function to initialize the game, if needed
-  onStart();
+  runGame()
 });
 
 // Add a callback to receive the results from processing an image
@@ -133,7 +134,10 @@ detector.addEventListener("onImageResultsSuccess", function(faces, image, timest
     drawEmoji(canvas, image, faces[0]);
 
     // TODO: Call your function to run the game (define it first!)
-    //runGame(canvas, image, faces[0])
+    if (checkEmoji(faces[0], target)) {
+      updateCorrect();
+      target = resetEmoji();
+    }
   }
 });
 
@@ -167,33 +171,44 @@ function drawEmoji(canvas, img, face) {
   ctx.strokeText(face.emojis.dominantEmoji, face.featurePoints[32]['x'] + 50, face.featurePoints[32]['y']-50)
 }
 
-/*
-function runGame(canvas, img, face){
-  not_guessed = true
-  while (not_guessed){
-    var target = emojis[Math.floor(Math.random() * 13)]
-    setTargetEmoji(target)
-    if(face.emojis.dominantEmoji == target){
-      setScore(correct++, total++)
-    }else{
-      not_guessed = false
-    }
-  }
-}
 
-// TODO: Define any variables and functions to implement the Mimic Me! game mechanics
 var correct = 0
 var total = 0
-*/
-// NOTE:
-// - Remember to call your update function from the "onImageResultsSuccess" event handler above
-// - You can use setTargetEmoji() and setScore() functions to update the respective elements
-// - You will have to pass in emojis as unicode values, e.g. setTargetEmoji(128578) for a simple smiley
-// - Unicode values for all emojis recognized by Affectiva are provided above in the list 'emojis'
-// - To check for a match, you can convert the dominant emoji to unicode using the toUnicode() function
+var target = null
 
-// Optional:
-// - Define an initialization/reset function, and call it from the "onInitializeSuccess" event handler above
-// - Define a game reset function (same as init?), and call it from the onReset() function above
+function runGame(canvas, img, face){
+  correct = 0
+  total = 0
+  setScore(correct, total)
+  target = resetEmoji()
+}
 
-// <your code here>
+function resetEmoji(){
+  newEmoji = emojis[Math.floor(Math.random() * 13)]
+  setTargetEmoji(newEmoji)
+  updateTotal()
+
+  setTimeout(function(){
+    if(target == newEmoji){
+        target = resetEmoji();
+    }
+  }, 10000);
+  return newEmoji
+}
+
+function checkEmoji(face, target){
+  if(toUnicode(face.emojis.dominantEmoji) == target){
+    return true;
+  }
+  return false;
+}
+
+function updateCorrect(){
+  correct +=1
+  setScore(correct, total)
+}
+
+function updateTotal(){
+  total +=1
+  setScore(correct, total)
+}
